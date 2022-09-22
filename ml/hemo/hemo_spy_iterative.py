@@ -308,11 +308,13 @@ for j in range(150):
     reduced_RN = RN[np.squeeze(RN_train_yhat < negative_distillation_threshold)]
     print(f'\nDropping {RN.shape[0] - reduced_RN.shape[0]} samples as they exceed negative distillation threshold of {negative_distillation_threshold}.\n')
     RN = reduced_RN
+    # distillating found positive examples
     P_train_yhat = model.predict([P, np.array([counts_aa(xi) for xi in P])])
     positive_distillation_threshold = 0.6
     reduced_P = P[np.squeeze(P_train_yhat > positive_distillation_threshold)]
     print(f'\nDropping {P.shape[0] - reduced_P.shape[0]} samples as they are below positive distillation threshold of {positive_distillation_threshold}.\n')
     P = reduced_P
+    # adding new reliable positives from the unlabeled test data
     if 2*P.shape[0] < RN.shape[0]:
         y_hat_unlabeled = model_2.predict([X_test_unlabeled, np.array([counts_aa(xi) for xi in X_test_unlabeled])])
         reliable_positive_t = 0.99
