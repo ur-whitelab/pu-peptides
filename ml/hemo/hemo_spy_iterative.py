@@ -300,22 +300,35 @@ for j in range(150):
         verbose=0,
     )
     model_2.evaluate([X_test, np.array([counts_aa(xi) for xi in X_test])] , y_test)
+
+    # finding best decision boundary threshold
+    y_hat_test = model_2.predict([X_test, np.array([counts_aa(xi) for xi in X_test])])
+    from sklearn.metrics import roc_curve
+    fpr, tpr, thresholds = roc_curve(y_test, y_hat_test, drop_intermediate=False)
+    # calculate the g-mean for each threshold
+    gmeans = np.sqrt(tpr * (1-fpr))
+    # locate the index of the largest g-mean
+    ix = np.argmax(gmeans)
+    best_accuracy_threshold = thresholds[ix]
+    print('\nBest Threshold=%f, G-Mean=%.3f\n' % (thresholds[ix], gmeans[ix]))
+
 #     model.evaluate([X_test, np.array([counts_aa(xi) for xi in X_test])] , y_test)
 #     if add_RP and j > 0:
     # distillating found negative examples
     RN_train_yhat = model.predict([RN, np.array([counts_aa(xi) for xi in RN])])
-    negative_distillation_threshold = 0.1
+    negative_distillation_threshold = best_accuracy_threshold
     reduced_RN = RN[np.squeeze(RN_train_yhat < negative_distillation_threshold)]
     print(f'\nDropping {RN.shape[0] - reduced_RN.shape[0]} samples as they exceed negative distillation threshold of {negative_distillation_threshold}.\n')
     RN = reduced_RN
     # distillating found positive examples
     P_train_yhat = model.predict([P, np.array([counts_aa(xi) for xi in P])])
-    positive_distillation_threshold = 0.6
+    positive_distillation_threshold = best_accuracy_threshold
     reduced_P = P[np.squeeze(P_train_yhat > positive_distillation_threshold)]
     print(f'\nDropping {P.shape[0] - reduced_P.shape[0]} samples as they are below positive distillation threshold of {positive_distillation_threshold}.\n')
     P = reduced_P
     # adding new reliable positives from the unlabeled test data
     if 2*P.shape[0] < RN.shape[0]:
+        print(f'Adding reliable positives from the unlabeled test data.')
         y_hat_unlabeled = model_2.predict([X_test_unlabeled, np.array([counts_aa(xi) for xi in X_test_unlabeled])])
         reliable_positive_t = 0.99
         sorted_prob_2_index = np.argsort(y_hat_unlabeled[:,0])[::-1]
@@ -324,6 +337,16 @@ for j in range(150):
         P = np.vstack([X_train_positive_0, P, X_test_unlabeled[reliable_positives_index]])
         X_test_unlabeled = np.delete(X_test_unlabeled, reliable_positives_index, axis=0)
         X_train_positive = P
+    else:
+        print(f'Adding reliable negatives from the unlabeled test data.')
+        y_hat_unlabeled = model_2.predict([X_test_unlabeled, np.array([counts_aa(xi) for xi in X_test_unlabeled])])
+        reliable_negative_t = negative_distillation_threshold
+        sorted_prob_2_index = np.argsort(y_hat_unlabeled[:,0])[::-1]
+        reliable_negatives_index = sorted_prob_2_index[(y_hat_unlabeled[np.argsort(X_test_unlabeled[:,0])[::-1]] < reliable_negative_t)[:,0]]
+        print(f'Reliable negatives found: {reliable_negatives_index.shape[0]}')
+        RN = np.vstack([RN, X_test_unlabeled[reliable_negatives_index]])
+        X_test_unlabeled = np.delete(X_test_unlabeled, reliable_negatives_index, axis=0)
+
 #         X_test_unlabeled[reliable_positives_index]
 #     print(f'\nPositive size: {P.shape[0]}, Negative size: {N.shape[0]}\n')
 #     if P.shape[0] < RN.shape[0]:
