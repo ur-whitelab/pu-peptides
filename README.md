@@ -8,7 +8,7 @@ Deep learning can create accurate predictive models by exploiting existing large
 
 ## Citation
 
-See [pre-print](https://pubs.acs.org/doi/10.1021/acs.jcim.2c01317) and the citation:
+See [pre-print](https://www.biorxiv.org/content/10.1101/2023.06.01.543289v1.abstract) and the citation:
 
 ```bibtex
 @article{ansari2023learning,
