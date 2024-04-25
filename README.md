@@ -8,15 +8,14 @@ Deep learning can create accurate predictive models by exploiting existing large
 
 ## Citation
 
-See [pre-print](https://www.biorxiv.org/content/10.1101/2023.06.01.543289v1.abstract) and the citation:
+See [paper](https://pubs.rsc.org/en/content/articlelanding/2024/dd/d3dd00218g) and the citation:
 
 ```bibtex
-@article{ansari2023learning,
-  title={Learning Peptide Properties with Positive Examples Only},
+@article{ansari2024learning,
+  title={Learning peptide properties with positive examples only},
   author={Ansari, Mehrad and White, Andrew D},
-  journal={bioRxiv},
-  pages={2023--06},
-  year={2023},
-  publisher={Cold Spring Harbor Laboratory}
+  journal={Digital Discovery},
+  year={2024},
+  publisher={Royal Society of Chemistry}
 }
 ```
